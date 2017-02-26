@@ -99,7 +99,7 @@ using interface: eth0
 ...
 ```
 
-##Disclamer
+##Disclaimer
 Only use allowed for educational purposes or professionaly during a penetration test given the proper permission.
 
 All rights reserved
