@@ -50,7 +50,6 @@ libcap rule: "src host 192.168.1.155"
 #    8 [SYN: 1] [SEQ #: 0x3a2f7661]
 #    9 [SYN: 1] [SEQ #: 0x722f7370]
 #   10 [SYN: 1] [SEQ #: 0x6f6f6c2f]
-#   10 [SYN: 1] [SEQ #: 0x61746a6f]
 ...
 ```
 
@@ -97,6 +96,7 @@ using interface: eth0
 #8	 [Read from file ":/va"] [Encoded SEQ #: 0x3a2f7661] [Wrote 74 bytes]
 #9	 [Read from file "r/sp"] [Encoded SEQ #: 0x722f7370] [Wrote 74 bytes]
 #10	 [Read from file "ool/"] [Encoded SEQ #: 0x6f6f6c2f] [Wrote 74 bytes]
+...
 ```
 
 ##Disclamer
