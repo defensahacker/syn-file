@@ -3,7 +3,7 @@
 #
 # Exfiltrate data from a compromised target using covert channels.
 #
-# (c) spinfoo
+# (c) spinfoo <spinfoo.vuln@gmail.com>
 
 all:
 	gcc syn-file.c -o syn-file -lnet -Wall

