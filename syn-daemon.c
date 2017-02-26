@@ -24,10 +24,8 @@
 #include <netinet/ip.h>
 
 
-
 FILE *logfile;
-struct sockaddr_in source, dest;
-int total=0,i,j; 
+int total=0;
 
 void print_tcp_packet(const u_char *buf, int s) {
 	struct iphdr *iph = (struct iphdr *)(buf  + sizeof(struct ethhdr) );
@@ -66,9 +64,8 @@ void usage(char *argv) {
 int main(int argc, char **argv) {
 	struct bpf_program fp;
 	bpf_u_int32 netp, maskp;
-	char rule[128];
 	pcap_t *handle;
-	char errbuf[PCAP_ERRBUF_SIZE], devname[64], flog[128];
+	char errbuf[PCAP_ERRBUF_SIZE], devname[64], flog[128], rule[128];
 	int c;
 	
 	rule[0]= '\0';
@@ -112,18 +109,18 @@ int main(int argc, char **argv) {
 		exit(EXIT_FAILURE);
 	}
 
-	logfile=fopen(flog,"w");
-	if(logfile == NULL)  {
+	logfile= fopen(flog,"w");
+	if (logfile == NULL)  {
 		printf("Unable to create file.");
 		exit(EXIT_FAILURE);
 	}
 
-	if(pcap_compile(handle, &fp, rule, 0, netp) == -1) {
+	if (pcap_compile(handle, &fp, rule, 0, netp) == -1) {
 		fprintf(stderr, "Error calling pcap_compile\n");
 		exit(EXIT_FAILURE);
 	}
 
-	if(pcap_setfilter(handle, &fp) == -1) {
+	if (pcap_setfilter(handle, &fp) == -1) {
 		fprintf(stderr, "Error setting filter\n");
 		exit(EXIT_FAILURE);
 	}
