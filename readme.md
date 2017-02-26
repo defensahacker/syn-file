@@ -23,7 +23,7 @@ However I have not seen any tool to deploy it using TCP sequence numbers, also i
 
 ###server
 ```
-# ./syn-daemon -i eth0 -s 192.168.1.155 -f file.bin
+# ./syn-daemon -i iface -s source_ip -f file_for_exfiltrated_data
 -i interface
 -s source ip
 -f file to store exfiltrated data
