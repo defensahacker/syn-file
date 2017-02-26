@@ -5,13 +5,19 @@
 #
 # (c) spinfoo <spinfoo.vuln@gmail.com>
 
-all: syn-file.c syn-daemon.c
-	gcc syn-file.c -o syn-file -lnet -Wall
-	@strip syn-file
-	@du -h syn-file
-	gcc syn-daemon.c -o syn-daemon -lpcap -Wall
-	@strip syn-daemon
-	@du -h syn-daemon
+CFLAGS=-Wall
+
+all: syn-file syn-daemon
+
+syn-file: syn-file.c
+	gcc $< -o $@ -lnet $(CFLAGS)
+	@strip $@
+	@du -h $@
+ 
+syn-daemon: syn-daemon.c
+	gcc $< -o $@ -lpcap $(CFLAGS)
+	@strip $@
+	@du -h $@
 
 clean:
 	rm -f syn-file syn-daemon
