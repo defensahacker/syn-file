@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
     int seq;
     int pkt;
     u_char enet_src[6];
-    u_char enet_dst[6] = {0x00, 0x0c, 0x29, 0xa5, 0x46, 0x6d};
+    u_char enet_dst[6] = {0x00, 0x0c, 0x29, 0xb3, 0x45, 0x6e};
     struct libnet_ether_addr *mac_src;
     
 	src_ip  = 0;
