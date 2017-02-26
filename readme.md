@@ -2,19 +2,20 @@
 
 Exfiltrate data from a compromised target using covert channels.
 
-##Cryptography: covert channels
 
+## Intro
 **syn-file** is a software that allows data exfiltration using TCP SYN sequence number packets.
 In that way it is possible to bypass firewalls or IDS as no TCP connection is ever opened... similar to SYN scanning.
 
-To be faster exfiltriating data, a useful codification technique is used. Encoding 4 chars in a integer like this:
+To be faster exfiltrating data, a useful codification technique is used. Encoding 4 chars in a integer like this:
 
 ```seq= buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3];```
 
 ##Background
 
 There are some tools to deploy covert channels, mainly using ICMP protocol, padding the content in the payload section... suspicious!
-But I have not seen any tool to deploy it using TCP sequence numbers, also in **syn-file** the payload is left empty ;-)
+
+However I have not seen any tool to deploy it using TCP sequence numbers, also in **syn-file** the payload is left empty ;-)
 
 
 ##usage / example
@@ -93,3 +94,6 @@ using interface: eth0
 ##Disclamer
 Only use allowed for educational purposes or professionaly during a penetration test given the proper permission.
 
+All rights reserved
+(c) 2017 spinfoo
+Jacobo Avariento
