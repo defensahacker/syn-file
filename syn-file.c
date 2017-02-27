@@ -22,6 +22,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#define VERSION "1.4"
 
 void usage(char *name) {
 	fprintf(stderr, "usage: %s -i interface -d dst_ip -f file_to_exfiltrate -p dst_port -P src_port -m MAC_address_server\n", name);
