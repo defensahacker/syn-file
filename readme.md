@@ -1,10 +1,10 @@
 # syn-file
 
-Exfiltrate data from a compromised target using covert channels.
+Exfiltrate data from a compromised target using covert channels abusing TCP SYN header data.
 
 
 ## Intro
-**syn-file** is a software that allows data exfiltration using TCP SYN sequence number packets.
+**syn-file** is a tool that allows data exfiltration using TCP SYN sequence number packets.
 In that way it is possible to bypass firewalls or IDS as no TCP connection is ever opened... similar to TCP SYN scanning.
 
 To be faster exfiltrating data, a useful codification technique is used. Encoding 4 chars in a integer like this:
